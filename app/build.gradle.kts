@@ -27,5 +27,8 @@ tasks.jar {
     manifest {
         attributes["Main-Class"] = "com.benavalli.kraken.app.AppKt" // Ensure this matches your main class
     }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE // ✅ Ignore duplicate files
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+    from(project(":io").tasks.getByName("jar").outputs.files.map { zipTree(it) })
 }
 

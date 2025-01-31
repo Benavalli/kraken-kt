@@ -5,9 +5,6 @@ plugins {
     `kotlin-dsl`
 }
 
-kotlin {
-    jvmToolchain(11)
-}
 
 dependencies {
     // Add a dependency on the Kotlin Gradle plugin, so that convention plugins can apply it.

@@ -13,9 +13,21 @@ class DHT11Sensor(private val context: Context, private val pin: Int) : KoinComp
     private var output: DigitalOutput? = null
 
     init {
-        // Configure Digital Output (for signaling DHT11)
+        setupOutput()
+    }
+
+    private fun setupOutput() {
+        // ✅ Check if GPIO 18 is already registered
+        val existingOutput = context.registry().all().containsKey("dht11-gpio")
+        if (existingOutput != null) {
+           // println("Reusing existing GPIO instance: ${existingOutput}")
+            output = existingOutput as DigitalOutput
+            return
+        }
+
+        // ✅ If not registered, create new DigitalOutput
         val outputConfig = DigitalOutputConfigBuilder.newInstance(context)
-            .id("dht11-output")
+            .id("dht11-gpio")
             .name("DHT11 Output")
             .address(pin)
             .shutdown(DigitalState.LOW)
@@ -23,10 +35,20 @@ class DHT11Sensor(private val context: Context, private val pin: Int) : KoinComp
             .provider("pigpio-digital-output")
             .build()
         output = context.create(outputConfig)
+    }
 
-        // Configure Digital Input (to read data from DHT11)
+    private fun setupInput() {
+        // ✅ Check if GPIO 18 is already registered
+        val existingInput = context.registry().all().containsKey("dht11-gpio")
+        if (existingInput != null) {
+           // println("Reusing existing GPIO instance: ${existingInput.key()}")
+            input = existingInput as DigitalInput
+            return
+        }
+
+        // ✅ If not registered, create new DigitalInput
         val inputConfig = DigitalInputConfigBuilder.newInstance(context)
-            .id("dht11-input")
+            .id("dht11-gpio")
             .name("DHT11 Input")
             .address(pin)
             .pull(PullResistance.OFF)
@@ -35,16 +57,18 @@ class DHT11Sensor(private val context: Context, private val pin: Int) : KoinComp
         input = context.create(inputConfig)
     }
 
-
-
-
     suspend fun readData(): EnvironmentData? = withContext(Dispatchers.IO) {
         val rawData = mutableListOf<Long>()
         val dataReady = CompletableDeferred<Boolean>()
 
+        // ✅ Step 1: Set GPIO 18 as OUTPUT to trigger DHT11
+        setupOutput()
         output?.low()
         delay(18)
         output?.high()
+
+        // ✅ Step 2: Switch GPIO 18 to INPUT to read data
+        setupInput()
 
         val listener = DigitalStateChangeListener {
             rawData.add(System.nanoTime())
@@ -54,7 +78,6 @@ class DHT11Sensor(private val context: Context, private val pin: Int) : KoinComp
         input?.addListener(listener)
 
         val success = withTimeoutOrNull(100) { dataReady.await() } ?: false
-
         input?.removeListener(listener)
 
         if (!success) {
@@ -76,7 +99,6 @@ class DHT11Sensor(private val context: Context, private val pin: Int) : KoinComp
         val temperature = (bits.slice(16..23).joinToString("").toInt(2)).toFloat()
         val checksum = bits.slice(32..39).joinToString("").toInt(2)
 
-        // Validate checksum
         return@withContext if (checksum == ((humidity + temperature).toInt() and 0xFF)) {
             EnvironmentData(temperature, humidity)
         } else {
