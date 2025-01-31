@@ -17,48 +17,76 @@ class DHT11Sensor(private val context: Context, private val pin: Int) : KoinComp
     }
 
     private fun setupOutput() {
-        // ✅ Try to get the existing GPIO instance as a DigitalOutput
-        val existingOutput: DigitalOutput? = context.registry().get<DigitalOutput>("dht11-gpio")
+        try {
+            // ✅ Check if GPIO 18 is already registered
+            if (context.registry().exists("dht11-gpio")) {
+                val existingInstance = context.registry().all()["dht11-gpio"]
 
-        if (existingOutput != null) {
-            println("Reusing existing GPIO output: ${existingOutput.id()}")
-            output = existingOutput
-            return
+                if (existingInstance is DigitalOutput) {
+                    println("Reusing existing DigitalOutput: ${existingInstance.id()}")
+                    output = existingInstance
+                    return
+                }
+
+                if (existingInstance is DigitalInput) {
+                    println("Releasing existing DigitalInput: ${existingInstance.id()} before setting OUTPUT mode")
+                    context.registry().remove<DigitalInput>("dht11-gpio")
+                }
+            }
+
+            println("Creating new DigitalOutput for GPIO 18")
+
+            // ✅ Now configure as Digital Output
+            val outputConfig = DigitalOutputConfigBuilder.newInstance(context)
+                .id("dht11-gpio")
+                .name("DHT11 Output")
+                .address(pin)
+                .shutdown(DigitalState.LOW)
+                .initial(DigitalState.HIGH)
+                .provider("pigpio-digital-output")
+                .build()
+
+            output = context.create(outputConfig)
+
+        } catch (e: Exception) {
+            println("Error setting up DigitalOutput: ${e.message}")
         }
-
-        // ✅ If no existing output, configure new Digital Output
-        val outputConfig = DigitalOutputConfigBuilder.newInstance(context)
-            .id("dht11-gpio")
-            .name("DHT11 Output")
-            .address(pin)
-            .shutdown(DigitalState.LOW)
-            .initial(DigitalState.HIGH)
-            .provider("pigpio-digital-output")
-            .build()
-
-        output = context.create(outputConfig)
     }
 
     private fun setupInput() {
-        // ✅ Try to get the existing GPIO instance as a DigitalInput
-        val existingInput: DigitalInput? = context.registry().get<DigitalInput>("dht11-gpio")
+        try {
+            // ✅ Check if GPIO 18 is already registered
+            if (context.registry().exists("dht11-gpio")) {
+                val existingInstance = context.registry().all()["dht11-gpio"]
 
-        if (existingInput != null) {
-            println("Reusing existing GPIO input: ${existingInput.id()}")
-            input = existingInput
-            return
+                if (existingInstance is DigitalInput) {
+                    println("Reusing existing DigitalInput: ${existingInstance.id()}")
+                    input = existingInstance
+                    return
+                }
+
+                if (existingInstance is DigitalOutput) {
+                    println("Releasing existing DigitalOutput: ${existingInstance.id()} before setting INPUT mode")
+                    context.registry().remove<DigitalOutput>("dht11-gpio")
+                }
+            }
+
+            println("Creating new DigitalInput for GPIO 18")
+
+            // ✅ Now configure as Digital Input
+            val inputConfig = DigitalInputConfigBuilder.newInstance(context)
+                .id("dht11-gpio")
+                .name("DHT11 Input")
+                .address(pin)
+                .pull(PullResistance.OFF)
+                .provider("pigpio-digital-input")
+                .build()
+
+            input = context.create(inputConfig)
+
+        } catch (e: Exception) {
+            println("Error setting up DigitalInput: ${e.message}")
         }
-
-        // ✅ If no existing input, configure new Digital Input
-        val inputConfig = DigitalInputConfigBuilder.newInstance(context)
-            .id("dht11-gpio")
-            .name("DHT11 Input")
-            .address(pin)
-            .pull(PullResistance.OFF)
-            .provider("pigpio-digital-input")
-            .build()
-
-        input = context.create(inputConfig)
     }
 
     suspend fun readData(): EnvironmentData? = withContext(Dispatchers.IO) {
