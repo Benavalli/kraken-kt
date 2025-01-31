@@ -43,7 +43,6 @@ class DHT11Sensor(private val context: Context, private val pin: Int) : KoinComp
                 .address(pin)
                 .shutdown(DigitalState.LOW)
                 .initial(DigitalState.HIGH)
-                .provider("pigpio-digital-output")
                 .build()
 
             output = context.create(outputConfig)
@@ -79,7 +78,6 @@ class DHT11Sensor(private val context: Context, private val pin: Int) : KoinComp
                 .name("DHT11 Input")
                 .address(pin)
                 .pull(PullResistance.OFF)
-                .provider("pigpio-digital-input")
                 .build()
 
             input = context.create(inputConfig)
