@@ -17,15 +17,16 @@ class DHT11Sensor(private val context: Context, private val pin: Int) : KoinComp
     }
 
     private fun setupOutput() {
-        // ✅ Check if GPIO 18 is already registered
-        val existingOutput = context.registry().all().containsKey("dht11-gpio")
+        // ✅ Try to get the existing GPIO instance as a DigitalOutput
+        val existingOutput: DigitalOutput? = context.registry().get<DigitalOutput>("dht11-gpio")
+
         if (existingOutput != null) {
-           // println("Reusing existing GPIO instance: ${existingOutput}")
-            output = existingOutput as DigitalOutput
+            println("Reusing existing GPIO output: ${existingOutput.id()}")
+            output = existingOutput
             return
         }
 
-        // ✅ If not registered, create new DigitalOutput
+        // ✅ If no existing output, configure new Digital Output
         val outputConfig = DigitalOutputConfigBuilder.newInstance(context)
             .id("dht11-gpio")
             .name("DHT11 Output")
@@ -34,19 +35,21 @@ class DHT11Sensor(private val context: Context, private val pin: Int) : KoinComp
             .initial(DigitalState.HIGH)
             .provider("pigpio-digital-output")
             .build()
+
         output = context.create(outputConfig)
     }
 
     private fun setupInput() {
-        // ✅ Check if GPIO 18 is already registered
-        val existingInput = context.registry().all().containsKey("dht11-gpio")
+        // ✅ Try to get the existing GPIO instance as a DigitalInput
+        val existingInput: DigitalInput? = context.registry().get<DigitalInput>("dht11-gpio")
+
         if (existingInput != null) {
-           // println("Reusing existing GPIO instance: ${existingInput.key()}")
-            input = existingInput as DigitalInput
+            println("Reusing existing GPIO input: ${existingInput.id()}")
+            input = existingInput
             return
         }
 
-        // ✅ If not registered, create new DigitalInput
+        // ✅ If no existing input, configure new Digital Input
         val inputConfig = DigitalInputConfigBuilder.newInstance(context)
             .id("dht11-gpio")
             .name("DHT11 Input")
@@ -54,6 +57,7 @@ class DHT11Sensor(private val context: Context, private val pin: Int) : KoinComp
             .pull(PullResistance.OFF)
             .provider("pigpio-digital-input")
             .build()
+
         input = context.create(inputConfig)
     }
 
