@@ -12,9 +12,6 @@ class DHT11Sensor(private val context: Context, private val pin: Int) : KoinComp
     private var input: DigitalInput? = null
     private var output: DigitalOutput? = null
 
-    init {
-        setupOutput()
-    }
 
     private fun setupOutput() {
         try {
@@ -97,6 +94,7 @@ class DHT11Sensor(private val context: Context, private val pin: Int) : KoinComp
         delay(18)
         output?.high()
 
+        delay(40)
         // ✅ Step 2: Switch GPIO 18 to INPUT to read data
         setupInput()
 
@@ -107,7 +105,7 @@ class DHT11Sensor(private val context: Context, private val pin: Int) : KoinComp
 
         input?.addListener(listener)
 
-        val success = withTimeoutOrNull(100) { dataReady.await() } ?: false
+        val success = withTimeoutOrNull(1000) { dataReady.await() } ?: false
         input?.removeListener(listener)
 
         if (!success) {
