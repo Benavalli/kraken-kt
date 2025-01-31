@@ -22,3 +22,10 @@ application {
     // (Note that Kotlin compiles `App.kt` to a class with FQN `com.example.app.AppKt`.)
     mainClass = "com.benavalli.kraken.app.AppKt"
 }
+
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "com.benavalli.kraken.app.AppKt" // Ensure this matches your main class
+    }
+}
+
