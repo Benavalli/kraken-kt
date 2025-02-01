@@ -30,19 +30,15 @@ fun main() {
         }
         //val dht11: DHT11Sensor = getKoin().get()
         val relay: Relay = getKoin().get()
-        val device = Device(22, pin = 18, DeviceType.LIGHT, DeviceState.DISABLED)
-        relay.changeRelayState(device)// Example: GPIO 18
+
         // Inicializa o banco de dados antes de iniciar a UI
-//        runBlocking {
-//            launch {
-//                val data = dht11.readData()
-//                println(data?.humidity.toString())
-//                println(data?.temperature.toString())
-//            }
-//
-//            delay(2000)
-//
-//        }
+        runBlocking {
+            launch {
+                val device = Device(22, pin = 18, DeviceType.LIGHT, DeviceState.DISABLED)
+                relay.changeRelayState(device)// Example: GPIO 18
+            }
+
+        }
         val message = "Hello JetBrains!"
         val printer = Printer(message)
         printer.printMessage()

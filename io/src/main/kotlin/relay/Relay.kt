@@ -5,12 +5,15 @@ import com.pi4j.io.gpio.digital.DigitalOutputConfigBuilder
 import com.pi4j.io.gpio.digital.DigitalState
 import com.pi4j.ktx.console
 import com.pi4j.ktx.io.digital.digitalOutput
+import com.pi4j.ktx.io.digital.piGpioProvider
 import com.pi4j.ktx.pi4j
 import com.pi4j.ktx.pi4jAsync
+import kotlinx.coroutines.delay
 import model.Device
 import model.DeviceState
 
 class Relay {
+
 
     fun changeRelayState(device: Device) {
         pi4jAsync {
@@ -19,16 +22,24 @@ class Relay {
                     id(device.id.toString())
                     name(device.type.name)
                     address(device.pin)
-                    shutdown(if (device.state == DeviceState.ENABLED) DigitalState.LOW else DigitalState.HIGH)
-                    initial(if (device.state == DeviceState.ENABLED) DigitalState.HIGH else DigitalState.LOW)
+                    shutdown(DigitalState.LOW)
+                    initial(DigitalState.LOW)
+                    provider("raspberrypi-digital-output")
                 }.apply {
-                    if (device.state == DeviceState.ENABLED) {
-                        low()
-                        // Todo log
-                    } else {
-                        high()
-                        // Todo log
-                    }
+                    println("entrei")
+                    high()
+                    delay(2000)
+                    low()
+                    high()
+                    delay(2000)
+                    low()
+                    delay(2000)
+                    high()
+                    delay(2000)
+                    low()
+                    delay(2000)
+                    high()
+                    delay(2000)
                 }
             }
 
