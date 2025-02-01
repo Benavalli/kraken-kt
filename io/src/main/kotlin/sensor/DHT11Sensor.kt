@@ -105,7 +105,7 @@ class DHT11Sensor(private val context: Context, private val pin: Int) : KoinComp
 
         input?.addListener(listener)
 
-        val success = withTimeoutOrNull(1000) { dataReady.await() } ?: false
+        val success = withTimeoutOrNull(2000) { dataReady.await() } ?: false
         input?.removeListener(listener)
 
         if (!success) {
