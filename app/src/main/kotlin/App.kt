@@ -34,7 +34,7 @@ fun main() {
         // Inicializa o banco de dados antes de iniciar a UI
         runBlocking {
             launch {
-                val device = Device(22, pin = 18, DeviceType.LIGHT, DeviceState.DISABLED)
+                val device = Device(22, pin = 25, DeviceType.LIGHT, DeviceState.DISABLED)
                 relay.changeRelayState(device)// Example: GPIO 18
             }
 

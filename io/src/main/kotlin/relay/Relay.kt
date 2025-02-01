@@ -17,7 +17,6 @@ class Relay {
 
     fun changeRelayState(device: Device) {
         pi4jAsync {
-            console {
                 digitalOutput(device.pin) {
                     id(device.id.toString())
                     name(device.type.name)
@@ -42,7 +41,5 @@ class Relay {
                     delay(2000)
                 }
             }
-
-        }
     }
 }
